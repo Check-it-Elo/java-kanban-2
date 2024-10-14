@@ -8,12 +8,12 @@ public class Epic extends Task {
 
     TaskManager manager;
 
-    private final ArrayList <Integer> subtaskIDs;
+    private final ArrayList<Integer> subtaskIDs;
 
     public Epic(String title, String description, Status status) {
         super(title, description, status);
         this.subtaskIDs = new ArrayList<>();
-        }
+    }
 
     public ArrayList<Integer> getSubtaskIDs() {
         return subtaskIDs;
