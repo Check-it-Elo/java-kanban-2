@@ -44,7 +44,7 @@ public class InMemoryHistoryManager implements HistoryManager {
         } else {
             tail = node.prev;
         }
-        taskMap.remove(node.task.getID());
+        taskMap.remove(node.task.getid());
     }
 
     // Получение всех задач в ArrayList
@@ -63,13 +63,13 @@ public class InMemoryHistoryManager implements HistoryManager {
     public void add(Task task) {
         Node newNode = new Node(task);
 
-        if (taskMap.containsKey(task.getID())) {
-            Node existingNode = taskMap.get(task.getID());
+        if (taskMap.containsKey(task.getid())) {
+            Node existingNode = taskMap.get(task.getid());
             removeNode(existingNode);
         }
 
         linkLast(newNode);
-        taskMap.put(task.getID(), newNode);
+        taskMap.put(task.getid(), newNode);
     }
 
     @Override

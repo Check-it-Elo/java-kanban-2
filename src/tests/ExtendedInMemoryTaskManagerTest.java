@@ -26,7 +26,7 @@ public class ExtendedInMemoryTaskManagerTest {
         task1 = new Task("Task 1", "Test task 1", Status.NEW);
         task2 = new Task("Task 2", "Test task 2", Status.NEW);
         epic1 = new Epic("Epic 1", "Test epic 1", Status.NEW);
-        subtask1 = new Subtask("Subtask 1", "Test subtask 1", Status.NEW, epic1.getID());
+        subtask1 = new Subtask("Subtask 1", "Test subtask 1", Status.NEW, epic1.getid());
         taskManager.addTask(task1);
         taskManager.addEpic(epic1);
     }
@@ -34,7 +34,7 @@ public class ExtendedInMemoryTaskManagerTest {
     // Проверка, что задача добавляется в историю
     @Test
     void testAddToHistory() {
-        Task fetchedTask = taskManager.getTask(task1.getID());
+        Task fetchedTask = taskManager.getTask(task1.getid());
         assertNotNull(fetchedTask);
         assertEquals(1, taskManager.getHistory().size());
     }
@@ -42,8 +42,8 @@ public class ExtendedInMemoryTaskManagerTest {
     // Проверка, что задача удаляется из истории при удалении
     @Test
     void testRemoveTaskUpdatesHistory() {
-        taskManager.getTask(task1.getID());
-        taskManager.deleteTaskById(task1.getID());
+        taskManager.getTask(task1.getid());
+        taskManager.deleteTaskById(task1.getid());
         assertEquals(0, taskManager.getHistory().size());
     }
 
@@ -52,13 +52,13 @@ public class ExtendedInMemoryTaskManagerTest {
     void testHistoryMaintainsOrder() {
         taskManager.addTask(task1);
         taskManager.addTask(task2);
-        taskManager.getTask(task1.getID());
-        taskManager.getTask(task2.getID());
+        taskManager.getTask(task1.getid());
+        taskManager.getTask(task2.getid());
 
         List<Task> history = taskManager.getHistory();
         assertEquals(2, history.size());
-        assertEquals(task1.getID(), history.get(0).getID());
-        assertEquals(task2.getID(), history.get(1).getID());
+        assertEquals(task1.getid(), history.get(0).getid());
+        assertEquals(task2.getid(), history.get(1).getid());
     }
 
 }

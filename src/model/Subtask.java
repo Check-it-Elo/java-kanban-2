@@ -2,15 +2,15 @@ package model;
 
 public class Subtask extends Task {
 
-    private Integer epicID;
+    private Integer epicid;
 
-    public Subtask(String title, String description, Status status, Integer epicID) {
+    public Subtask(String title, String description, Status status, Integer epicid) {
         super(title, description, status);
-        this.epicID = epicID;
+        this.epicid = epicid;
     }
 
     public Integer getLinkEpic() {
-        return epicID;
+        return epicid;
     }
 
 
@@ -19,7 +19,7 @@ public class Subtask extends Task {
         return "model.Subtask{" +
                 "title='" + getTitle() + '\'' +
                 ", description='" + getDescription() + '\'' +
-                ", ID=" + getID() +
+                ", id=" + getid() +
                 ", status=" + getStatus() +
                 '}';
     }

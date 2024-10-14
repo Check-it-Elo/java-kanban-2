@@ -51,7 +51,7 @@ public interface TaskManager {
     // Методы для обновления статусов
     public void updateEpicStatus(int epicId);
 
-    public ArrayList<Integer> getSubtaskIDsByEpicId(int id);
+    public ArrayList<Integer> getSubtaskidsByEpicId(int id);
 
     Task getTask(int id);
 

@@ -18,7 +18,7 @@ public class Main {
 
         Epic epic1 = new Epic("Эпик 1", "Описание эпика 1", Status.NEW);
         manager.addEpic(epic1);
-        manager.addSubtask(new Subtask("Подзадача 1", "Описание подзадачи 1", Status.NEW, epic1.getID()));
+        manager.addSubtask(new Subtask("Подзадача 1", "Описание подзадачи 1", Status.NEW, epic1.getid()));
 
         printAllTasks(manager);
 
@@ -43,7 +43,7 @@ public class Main {
         } else {
             for (Epic epic : epics) {
                 System.out.println(epic);
-                ArrayList<Integer> subtaskIds = manager.getSubtaskIDsByEpicId(epic.getID());
+                ArrayList<Integer> subtaskIds = manager.getSubtaskidsByEpicId(epic.getid());
                 for (int subtaskId : subtaskIds) {
                     Subtask subtask = manager.getSubtask(subtaskId);
                     if (subtask != null) {
