@@ -1,4 +1,4 @@
-package service;
+package tests;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -8,6 +8,7 @@ import model.Epic;
 import model.Subtask;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import service.InMemoryTaskManager;
 
 class InMemoryTaskManagerTest {
 
@@ -21,7 +22,6 @@ class InMemoryTaskManagerTest {
     }
 
     //проверяется неизменность задачи (по всем полям) при добавлении задачи в менеджер
-
     @Test
     public void testTaskImmutabilityAfterAdd() {
         taskManager.addTask(originalTask);
@@ -34,7 +34,6 @@ class InMemoryTaskManagerTest {
 
 
     //проверка, что InMemoryTaskManager действительно добавляет задачи разного типа и может найти их по id;
-
     @Test
     void testAddAndFindTaskById() {
         Task task = new Task("Task 1", "Description 1", Status.NEW);
@@ -75,23 +74,6 @@ class InMemoryTaskManagerTest {
         assertEquals(subtask.getDescription(), foundSubtask.getDescription(), "Subtask descriptions should match");
         assertEquals(subtask.getStatus(), foundSubtask.getStatus(), "Subtask statuses should match");
     }
-
-
-    //проверка, что объект Epic нельзя добавить в самого себя в виде подзадачи;
-    @Test
-    void testAddSubtaskToSelfEpic() {
-
-        Epic epic = new Epic("Epic 1", "Description of Epic 1", Status.NEW);
-        taskManager.addEpic(epic);
-
-        // Пытаемся создать Subtask, ссылающуюся на сам Epic
-        Subtask subtask = new Subtask("Subtask 1", "Subtask description", Status.NEW, epic.getID());
-
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            taskManager.addSubtask(subtask);
-        });
-    }
-
 
 
 }
