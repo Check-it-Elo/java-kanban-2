@@ -4,10 +4,10 @@ import service.*;
 
 public class Task {
 
-    String title;
-    String description;
-    int id;
-    Status status;
+    private String title;
+    private String description;
+    private int id;
+    private Status status;
 
 
     public Task(String title, String description, Status status) {
@@ -26,7 +26,7 @@ public class Task {
         return description;
     }
 
-    public int getid() {
+    public int getId() {
         return id;
     }
 
@@ -79,5 +79,10 @@ public class Task {
     public void setStatus(Status status) {
         this.status = status;
     }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
 
 }

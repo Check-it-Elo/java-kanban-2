@@ -1,4 +1,4 @@
-package tests;
+package test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -25,9 +25,9 @@ class InMemoryTaskManagerTest {
     @Test
     public void testTaskImmutabilityAfterAdd() {
         taskManager.addTask(originalTask);
-        Task fetchedTask = taskManager.getTask(originalTask.getid());
+        Task fetchedTask = taskManager.getTask(originalTask.getId());
 
-        assertEquals(originalTask.getid(), fetchedTask.getid());
+        assertEquals(originalTask.getId(), fetchedTask.getId());
         assertEquals(originalTask.getTitle(), fetchedTask.getTitle());
         assertEquals(originalTask.getDescription(), fetchedTask.getDescription());
     }
@@ -39,9 +39,9 @@ class InMemoryTaskManagerTest {
         Task task = new Task("Task 1", "Description 1", Status.NEW);
         taskManager.addTask(task);
 
-        Task foundTask = taskManager.getTaskById(task.getid());
+        Task foundTask = taskManager.getTaskById(task.getId());
         assertNotNull(foundTask, "Task should not be null");
-        assertEquals(task.getid(), foundTask.getid(), "Task id should match");
+        assertEquals(task.getId(), foundTask.getId(), "Task id should match");
         assertEquals(task.getTitle(), foundTask.getTitle(), "Task names should match");
         assertEquals(task.getDescription(), foundTask.getDescription(), "Task descriptions should match");
         assertEquals(task.getStatus(), foundTask.getStatus(), "Task statuses should match");
@@ -49,27 +49,27 @@ class InMemoryTaskManagerTest {
 
     @Test
     void testAddAndFindEpicById() {
-        Epic epic = new Epic("Epic 1", "Description for epic", Status.NEW);
+        Epic epic = new Epic("Epic 1", "Description for epic");
         taskManager.addEpic(epic);
 
-        Epic foundEpic = taskManager.getEpicById(epic.getid());
+        Epic foundEpic = taskManager.getEpicById(epic.getId());
         assertNotNull(foundEpic, "Epic should not be null");
-        assertEquals(epic.getid(), foundEpic.getid(), "Epic id should match");
+        assertEquals(epic.getId(), foundEpic.getId(), "Epic id should match");
         assertEquals(epic.getTitle(), foundEpic.getTitle(), "Epic names should match");
         assertEquals(epic.getDescription(), foundEpic.getDescription(), "Epic descriptions should match");
     }
 
     @Test
     void testAddAndFindSubtaskById() {
-        Epic epic = new Epic("Epic 1", "Description for epic", Status.NEW);
+        Epic epic = new Epic("Epic 1", "Description for epic");
         taskManager.addEpic(epic);
 
-        Subtask subtask = new Subtask("Subtask 1", "Description for subtask", Status.NEW, epic.getid());
+        Subtask subtask = new Subtask("Subtask 1", "Description for subtask", Status.NEW, epic.getId());
         taskManager.addSubtask(subtask);
 
-        Subtask foundSubtask = taskManager.getSubtaskById(subtask.getid());
+        Subtask foundSubtask = taskManager.getSubtaskById(subtask.getId());
         assertNotNull(foundSubtask, "Subtask should not be null");
-        assertEquals(subtask.getid(), foundSubtask.getid(), "Subtask id should match");
+        assertEquals(subtask.getId(), foundSubtask.getId(), "Subtask id should match");
         assertEquals(subtask.getTitle(), foundSubtask.getTitle(), "Subtask names should match");
         assertEquals(subtask.getDescription(), foundSubtask.getDescription(), "Subtask descriptions should match");
         assertEquals(subtask.getStatus(), foundSubtask.getStatus(), "Subtask statuses should match");

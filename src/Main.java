@@ -4,8 +4,10 @@ import model.Status;
 import model.Subtask;
 import model.Task;
 import service.TaskManager;
+
 import java.util.ArrayList;
 import java.util.List;
+
 import service.InMemoryTaskManager;
 
 public class Main {
@@ -16,14 +18,13 @@ public class Main {
         manager.addTask(new Task("Задача 1", "Описание задачи 1", Status.NEW));
         manager.addTask(new Task("Задача 2", "Описание задачи 2", Status.IN_PROGRESS));
 
-        Epic epic1 = new Epic("Эпик 1", "Описание эпика 1", Status.NEW);
+        Epic epic1 = new Epic("Эпик 1", "Описание эпика 1");
         manager.addEpic(epic1);
-        manager.addSubtask(new Subtask("Подзадача 1", "Описание подзадачи 1", Status.NEW, epic1.getid()));
+        manager.addSubtask(new Subtask("Подзадача 1", "Описание подзадачи 1", Status.NEW, epic1.getId()));
 
         printAllTasks(manager);
 
     }
-
 
     private static void printAllTasks(TaskManager manager) {
         System.out.println("Задачи:");
@@ -43,7 +44,7 @@ public class Main {
         } else {
             for (Epic epic : epics) {
                 System.out.println(epic);
-                ArrayList<Integer> subtaskIds = manager.getSubtaskidsByEpicId(epic.getid());
+                List<Integer> subtaskIds = manager.getSubtaskidsByEpicId(epic.getId());
                 for (int subtaskId : subtaskIds) {
                     Subtask subtask = manager.getSubtask(subtaskId);
                     if (subtask != null) {

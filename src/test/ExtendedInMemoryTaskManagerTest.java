@@ -1,4 +1,4 @@
-package tests;
+package test;
 
 import model.Epic;
 import model.Status;
@@ -25,8 +25,8 @@ public class ExtendedInMemoryTaskManagerTest {
         taskManager = new InMemoryTaskManager();
         task1 = new Task("Task 1", "Test task 1", Status.NEW);
         task2 = new Task("Task 2", "Test task 2", Status.NEW);
-        epic1 = new Epic("Epic 1", "Test epic 1", Status.NEW);
-        subtask1 = new Subtask("Subtask 1", "Test subtask 1", Status.NEW, epic1.getid());
+        epic1 = new Epic("Epic 1", "Test epic 1");
+        subtask1 = new Subtask("Subtask 1", "Test subtask 1", Status.NEW, epic1.getId());
         taskManager.addTask(task1);
         taskManager.addEpic(epic1);
     }
@@ -34,7 +34,7 @@ public class ExtendedInMemoryTaskManagerTest {
     // Проверка, что задача добавляется в историю
     @Test
     void testAddToHistory() {
-        Task fetchedTask = taskManager.getTask(task1.getid());
+        Task fetchedTask = taskManager.getTask(task1.getId());
         assertNotNull(fetchedTask);
         assertEquals(1, taskManager.getHistory().size());
     }
@@ -42,8 +42,8 @@ public class ExtendedInMemoryTaskManagerTest {
     // Проверка, что задача удаляется из истории при удалении
     @Test
     void testRemoveTaskUpdatesHistory() {
-        taskManager.getTask(task1.getid());
-        taskManager.deleteTaskById(task1.getid());
+        taskManager.getTask(task1.getId());
+        taskManager.deleteTaskById(task1.getId());
         assertEquals(0, taskManager.getHistory().size());
     }
 
@@ -52,13 +52,13 @@ public class ExtendedInMemoryTaskManagerTest {
     void testHistoryMaintainsOrder() {
         taskManager.addTask(task1);
         taskManager.addTask(task2);
-        taskManager.getTask(task1.getid());
-        taskManager.getTask(task2.getid());
+        taskManager.getTask(task1.getId());
+        taskManager.getTask(task2.getId());
 
         List<Task> history = taskManager.getHistory();
         assertEquals(2, history.size());
-        assertEquals(task1.getid(), history.get(0).getid());
-        assertEquals(task2.getid(), history.get(1).getid());
+        assertEquals(task1.getId(), history.get(0).getId());
+        assertEquals(task2.getId(), history.get(1).getId());
     }
 
 }
