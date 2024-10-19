@@ -67,7 +67,6 @@ public class Task {
                 '}';
     }
 
-
     public void setTitle(String title) {
         this.title = title;
     }
