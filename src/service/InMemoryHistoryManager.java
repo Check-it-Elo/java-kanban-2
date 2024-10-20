@@ -23,12 +23,7 @@ public class InMemoryHistoryManager implements HistoryManager {
     @Override
     public void add(Task task) {
         Node newNode = new Node(task);
-
-        if (taskMap.containsKey(task.getId())) {
-            Node existingNode = taskMap.get(task.getId());
-            removeNode(existingNode);
-        }
-
+        removeNode(taskMap.get(task.getId()));
         linkLast(newNode);
         taskMap.put(task.getId(), newNode);
     }
@@ -50,6 +45,13 @@ public class InMemoryHistoryManager implements HistoryManager {
             current = current.getNext();
         }
         return tasks;
+    }
+
+    @Override
+    public void clearHistory() {
+        head = null;
+        tail = null;
+        taskMap.clear();
     }
 
     // Добавление узла в конец списка
