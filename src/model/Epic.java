@@ -1,6 +1,7 @@
 package model;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import service.TaskManager;
 
@@ -8,15 +9,15 @@ public class Epic extends Task {
 
     TaskManager manager;
 
-    private final ArrayList <Integer> subtaskIDs;
+    private final List<Integer> subtaskids;
 
-    public Epic(String title, String description, Status status) {
-        super(title, description, status);
-        this.subtaskIDs = new ArrayList<>();
-        }
+    public Epic(String title, String description) {
+        super(title, description, Status.NEW);
+        this.subtaskids = new ArrayList<>();
+    }
 
-    public ArrayList<Integer> getSubtaskIDs() {
-        return subtaskIDs;
+    public List<Integer> getSubtaskids() {
+        return subtaskids;
     }
 
 
@@ -29,9 +30,9 @@ public class Epic extends Task {
         return "model.Epic{" +
                 "title='" + getTitle() + '\'' +
                 ", description='" + getDescription() + '\'' +
-                ", ID=" + getID() +
+                ", id=" + getId() +
                 ", status=" + getStatus() +
-                ", subtasksCount=" + subtaskIDs.size() +
+                ", subtasksCount=" + subtaskids.size() +
                 '}';
     }
 
