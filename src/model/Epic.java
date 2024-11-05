@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import service.TaskManager;
+import service.TaskType;
 
 public class Epic extends Task {
 
@@ -25,15 +26,29 @@ public class Epic extends Task {
         return manager.getSubtaskById(id).getStatus() == Status.DONE;
     }
 
+//    @Override
+//    public String toString() {
+//        return "model.Epic{" +
+//                "title='" + getTitle() + '\'' +
+//                ", description='" + getDescription() + '\'' +
+//                ", id=" + getId() +
+//                ", status=" + getStatus() +
+//                ", subtasksCount=" + subtaskids.size() +
+//                '}';
+//    }
+
+
     @Override
     public String toString() {
-        return "model.Epic{" +
-                "title='" + getTitle() + '\'' +
-                ", description='" + getDescription() + '\'' +
-                ", id=" + getId() +
-                ", status=" + getStatus() +
-                ", subtasksCount=" + subtaskids.size() +
-                '}';
+        return String.format("%s,%d,%s,%s,%s",
+                getType(), getId(), getTitle(), getDescription(), getStatus());
     }
+
+
+    @Override
+    public TaskType getType() {
+        return TaskType.EPIC;
+    }
+
 
 }

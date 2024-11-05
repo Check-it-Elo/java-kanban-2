@@ -34,26 +34,30 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                 writer.newLine();
             }
         } catch (IOException e) {
-            throw new ManagerSaveException("РћС€РёР±РєР° РїСЂРё СЃРѕС…СЂР°РЅРµРЅРёРё РґР°РЅРЅС‹С… РІ С„Р°Р№Р»", e);
+            throw new ManagerSaveException("Ошибка при сохранении данных в файл»", e);
         }
     }
 
 
-    private String toString(Task task) {
-        if (task instanceof Subtask) {
-            return String.format("SUBTASK,%d,%s,%s,%s", task.getId(), task.getTitle(), task.getDescription(), task.getStatus());
-        } else if (task instanceof Epic) {
-            return String.format("EPIC,%d,%s,%s,%s", task.getId(), task.getTitle(), task.getDescription(), task.getStatus());
-        } else {
-            return String.format("TASK,%d,%s,%s,%s", task.getId(), task.getTitle(), task.getDescription(), task.getStatus());
-        }
+//    private String toString(Task task) {
+//        if (task instanceof Subtask) {
+//            return String.format("SUBTASK,%d,%s,%s,%s", task.getId(), task.getTitle(), task.getDescription(), task.getStatus());
+//        } else if (task instanceof Epic) {
+//            return String.format("EPIC,%d,%s,%s,%s", task.getId(), task.getTitle(), task.getDescription(), task.getStatus());
+//        } else {
+//            return String.format("TASK,%d,%s,%s,%s", task.getId(), task.getTitle(), task.getDescription(), task.getStatus());
+//        }
+//    }
+
+    public String toString(Task task) {
+        return task.toString();
     }
 
 
     private Task fromString(String value) {
         String[] parts = value.split(",");
         if (parts.length < 5) {
-            throw new IllegalArgumentException("РЎС‚СЂРѕРєР° РёРјРµРµС‚ РЅРµРґРѕСЃС‚Р°С‚РѕС‡РЅРѕ С‡Р°СЃС‚РµР№: " + value);
+            throw new IllegalArgumentException("Недостаточно данных: " + value);
         }
 
         int id = Integer.parseInt(parts[1]);
@@ -64,15 +68,21 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         switch (parts[0]) {
             case "SUBTASK":
                 if (parts.length < 6) {
-                    throw new IllegalArgumentException("SUBTASK РЅРµРґРѕСЃС‚Р°С‚РѕС‡РЅРѕ С‡Р°СЃС‚РµР№: " + value);
+                    throw new IllegalArgumentException("Некорректный идентификатор задачи: " + value);
                 }
                 int epicId = Integer.parseInt(parts[5]);
-                return new Subtask(title, description, status, epicId);
+                Subtask subtask = new Subtask(title, description, status, epicId);
+                subtask.setId(id);
+                return subtask;
             case "EPIC":
-                return new Epic(title, description);
+                Epic epic = new Epic(title, description);
+                epic.setId(id);
+                return epic;
             case "TASK":
             default:
-                return new Task(title, description, status);
+                Task task = new Task(title, description, status);
+                task.setId(id);
+                return task;
         }
     }
 
@@ -81,6 +91,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         FileBackedTaskManager manager = new FileBackedTaskManager(file);
         try {
             List<String> lines = Files.readAllLines(file.toPath());
+            int maxId = 0;
             for (String line : lines) {
                 Task task = manager.fromString(line);
                 if (task instanceof Subtask) {
@@ -90,15 +101,20 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                 } else {
                     manager.addTask(task);
                 }
+
+                if (task.getId() > maxId) {
+                    maxId = task.getId();
+                }
             }
+            InMemoryTaskManager.counter = maxId + 1;
+
         } catch (IOException e) {
-            throw new RuntimeException("РћС€РёР±РєР° РїСЂРё Р·Р°РіСЂСѓР·РєРµ РґР°РЅРЅС‹С… РёР· С„Р°Р№Р»Р°", e);
+            throw new RuntimeException("Ошибка при загрузке данных из файла: ", e);
         }
         return manager;
     }
 
 
-    //Р”РѕР±Р°РІР»РµРЅРёРµ
     @Override
     public void addTask(Task task) {
         super.addTask(task);
@@ -118,7 +134,6 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     }
 
 
-    //РЈРґР°Р»РµРЅРёРµ
     @Override
     public void deleteAllTasks() {
         super.deleteAllTasks();
@@ -138,7 +153,6 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     }
 
 
-    //РћР±РЅРѕРІР»РµРЅРёРµ
     @Override
     public void updateTask(Task task) {
         super.updateTask(task);
@@ -158,7 +172,6 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     }
 
 
-    //РЈРґР°Р»РµРЅРёРµ РїРѕ id
     @Override
     public void deleteTaskById(int id) {
         deleteTaskById(id);
