@@ -90,11 +90,11 @@ public class Task {
     }
 
 
-    @Override
-    public String toString() {
-        return String.format("%s,%d,%s,%s,%s",
-                getType(), getId(), getTitle(), getDescription(), getStatus());
-    }
+//    @Override
+//    public String toString() {
+//        return String.format("%s,%d,%s,%s,%s",
+//                getType(), getId(), getTitle(), getDescription(), getStatus());
+//    }
 
 
 }

@@ -31,11 +31,11 @@ public class Subtask extends Task {
         return TaskType.SUBTASK;
     }
 
-    @Override
-    public String toString() {
-        return String.format("%s,%d,%s,%s,%s",
-                getType(), getId(), getTitle(), getDescription(), getStatus());
-    }
+//    @Override
+//    public String toString() {
+//        return String.format("%s,%d,%s,%s,%s",
+//                getType(), getId(), getTitle(), getDescription(), getStatus());
+//    }
 
 
 }

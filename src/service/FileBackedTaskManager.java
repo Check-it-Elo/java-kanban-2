@@ -39,19 +39,20 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     }
 
 
-//    private String toString(Task task) {
-//        if (task instanceof Subtask) {
-//            return String.format("SUBTASK,%d,%s,%s,%s", task.getId(), task.getTitle(), task.getDescription(), task.getStatus());
-//        } else if (task instanceof Epic) {
-//            return String.format("EPIC,%d,%s,%s,%s", task.getId(), task.getTitle(), task.getDescription(), task.getStatus());
-//        } else {
-//            return String.format("TASK,%d,%s,%s,%s", task.getId(), task.getTitle(), task.getDescription(), task.getStatus());
-//        }
-//    }
-
-    public String toString(Task task) {
-        return task.toString();
+    private String toString(Task task) {
+        TaskType type = task.getType();
+        return String.format("%s,%d,%s,%s,%s",
+                type,
+                task.getId(),
+                task.getTitle(),
+                task.getDescription(),
+                task.getStatus());
     }
+
+
+//    public String toString(Task task) {
+//        return task.toString();
+//    }
 
 
     private Task fromString(String value) {
@@ -92,14 +93,19 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         try {
             List<String> lines = Files.readAllLines(file.toPath());
             int maxId = 0;
+
             for (String line : lines) {
                 Task task = manager.fromString(line);
-                if (task instanceof Subtask) {
-                    manager.addSubtask((Subtask) task);
-                } else if (task instanceof Epic) {
-                    manager.addEpic((Epic) task);
-                } else {
-                    manager.addTask(task);
+                switch (task.getType()) {
+                    case SUBTASK:
+                        manager.addSubtask((Subtask) task);
+                        break;
+                    case EPIC:
+                        manager.addEpic((Epic) task);
+                        break;
+                    case TASK:
+                        manager.addTask(task);
+                        break;
                 }
 
                 if (task.getId() > maxId) {
