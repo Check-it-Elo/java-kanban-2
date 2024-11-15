@@ -1,5 +1,7 @@
 package model;
 
+import service.TaskType;
+
 public class Subtask extends Task {
 
     private Integer epicid;
@@ -13,15 +15,27 @@ public class Subtask extends Task {
         return epicid;
     }
 
+//    @Override
+//    public String toString() {
+//        return "model.Subtask{" +
+//                "title='" + getTitle() + '\'' +
+//                ", description='" + getDescription() + '\'' +
+//                ", id=" + getId() +
+//                ", status=" + getStatus() +
+//                '}';
+//    }
+
 
     @Override
-    public String toString() {
-        return "model.Subtask{" +
-                "title='" + getTitle() + '\'' +
-                ", description='" + getDescription() + '\'' +
-                ", id=" + getId() +
-                ", status=" + getStatus() +
-                '}';
+    public TaskType getType() {
+        return TaskType.SUBTASK;
     }
+
+//    @Override
+//    public String toString() {
+//        return String.format("%s,%d,%s,%s,%s",
+//                getType(), getId(), getTitle(), getDescription(), getStatus());
+//    }
+
 
 }
