@@ -6,6 +6,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import service.InMemoryTaskManager;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -21,10 +23,11 @@ public class ExtendedInMemoryTaskManagerTest {
     @BeforeEach
     public void setUp() {
         taskManager = new InMemoryTaskManager();
-        task1 = new Task("Task 1", "Test task 1", Status.NEW);
-        task2 = new Task("Task 2", "Test task 2", Status.NEW);
+        task1 = new Task("Task 1", "Test task 1", Status.NEW, Duration.ofHours(1), LocalDateTime.now());
+        task2 = new Task("Task 2", "Test task 2", Status.NEW, Duration.ofHours(2), LocalDateTime.now().plusDays(1));
         epic1 = new Epic("Epic 1", "Test epic 1");
-        subtask1 = new Subtask("Subtask 1", "Test subtask 1", Status.NEW, epic1.getId());
+        subtask1 = new Subtask("Subtask 1", "Test subtask 1", Status.NEW, epic1.getId(),
+                Duration.ofMinutes(30), LocalDateTime.now().plusDays(2));
         taskManager.addTask(task1);
         taskManager.addEpic(epic1);
     }
@@ -58,5 +61,33 @@ public class ExtendedInMemoryTaskManagerTest {
         assertEquals(task1.getId(), history.get(0).getId());
         assertEquals(task2.getId(), history.get(1).getId());
     }
+
+
+    //проверка добавления задач с duration и startTime
+    @Test
+    void testTaskWithDurationAndStartTime() {
+        taskManager.addTask(task1);
+        taskManager.addTask(task2);
+
+        Task fetchedTask1 = taskManager.getTask(task1.getId());
+        Task fetchedTask2 = taskManager.getTask(task2.getId());
+
+        assertEquals(Duration.ofHours(1), fetchedTask1.getDuration());
+        assertEquals(Duration.ofHours(2), fetchedTask2.getDuration());
+        assertNotNull(fetchedTask1.getStartTime());
+        assertNotNull(fetchedTask2.getStartTime());
+    }
+
+//    //проверка добавления подзадач с duration и startTime
+//    @Test
+//    void testSubtaskWithDurationAndStartTime() {
+//        taskManager.addEpic(epic1);
+//        taskManager.addSubtask(subtask1);
+//
+//        Subtask fetchedSubtask = taskManager.getSubtask(subtask1.getId());
+//        assertEquals(Duration.ofMinutes(30), fetchedSubtask.getDuration());
+//        assertNotNull(fetchedSubtask.getStartTime());
+//        assertEquals(epic1.getId(), fetchedSubtask.getLinkEpic());
+//    }
 
 }

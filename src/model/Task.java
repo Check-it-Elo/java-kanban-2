@@ -2,7 +2,10 @@ package model;
 
 import service.*;
 
-public class Task {
+import java.time.Duration;
+import java.time.LocalDateTime;
+
+public class Task implements Comparable<Task> {
 
     private String title;
     private String description;
@@ -10,12 +13,16 @@ public class Task {
     private Status status;
     private TaskType type;
 
+    private Duration duration; //полное время
+    private LocalDateTime startTime; //время начала
 
-    public Task(String title, String description, Status status) {
+    public Task(String title, String description, Status status, Duration duration, LocalDateTime startTime) {
         this.title = title;
         this.description = description;
         this.id = InMemoryTaskManager.counter++;
         this.status = status;
+        this.duration = duration;
+        this.startTime = startTime;
     }
 
 
@@ -33,6 +40,33 @@ public class Task {
 
     public Status getStatus() {
         return status;
+    }
+
+
+    public Duration getDuration() {
+        return duration;
+    }
+
+    public LocalDateTime getStartTime() {
+        return startTime;
+    }
+
+    public LocalDateTime getEndTime() {
+        return startTime.plus(duration);
+    }
+
+    @Override
+    public int compareTo(Task other) {
+        if (this.startTime == null && other.startTime == null) {
+            return 0;
+        }
+        if (this.startTime == null) {
+            return 1;
+        }
+        if (other.startTime == null) {
+            return -1;
+        }
+        return this.startTime.compareTo(other.startTime);
     }
 
 
@@ -88,13 +122,5 @@ public class Task {
     public TaskType getType() {
         return TaskType.TASK;
     }
-
-
-//    @Override
-//    public String toString() {
-//        return String.format("%s,%d,%s,%s,%s",
-//                getType(), getId(), getTitle(), getDescription(), getStatus());
-//    }
-
 
 }

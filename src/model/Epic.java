@@ -1,5 +1,7 @@
 package model;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,7 +15,7 @@ public class Epic extends Task {
     private final List<Integer> subtaskids;
 
     public Epic(String title, String description) {
-        super(title, description, Status.NEW);
+        super(title, description, Status.NEW, Duration.ZERO, LocalDateTime.now());
         this.subtaskids = new ArrayList<>();
     }
 
@@ -38,17 +40,39 @@ public class Epic extends Task {
 //    }
 
 
-//    @Override
-//    public String toString() {
-//        return String.format("%s,%d,%s,%s,%s",
-//                getType(), getId(), getTitle(), getDescription(), getStatus());
-//    }
-
-
     @Override
     public TaskType getType() {
         return TaskType.EPIC;
     }
 
+
+    //общая продолжительность всех подзадач
+    @Override
+    public Duration getDuration() {
+        Duration totalDuration = Duration.ZERO;
+        for (Integer subtaskId : subtaskids) {
+            totalDuration = totalDuration.plus(manager.getSubtaskById(subtaskId).getDuration());
+        }
+        return totalDuration;
+    }
+
+    //самое раннее время начала среди всех подзадач
+    @Override
+    public LocalDateTime getStartTime() {
+        LocalDateTime earliestStartTime = LocalDateTime.MAX;
+        for (Integer subtaskId : subtaskids) {
+            LocalDateTime subtaskStartTime = manager.getSubtaskById(subtaskId).getStartTime();
+            if (subtaskStartTime.isBefore(earliestStartTime)) {
+                earliestStartTime = subtaskStartTime;
+            }
+        }
+        return earliestStartTime;
+    }
+
+    //время окончания задачи
+    @Override
+    public LocalDateTime getEndTime() {
+        return getStartTime().plus(getDuration());
+    }
 
 }

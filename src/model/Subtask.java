@@ -2,12 +2,16 @@ package model;
 
 import service.TaskType;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
+
 public class Subtask extends Task {
 
     private Integer epicid;
 
-    public Subtask(String title, String description, Status status, Integer epicid) {
-        super(title, description, status);
+    public Subtask(String title, String description, Status status, Integer epicid, Duration duration,
+                   LocalDateTime startTime) {
+        super(title, description, status, duration, startTime);
         this.epicid = epicid;
     }
 
@@ -30,12 +34,6 @@ public class Subtask extends Task {
     public TaskType getType() {
         return TaskType.SUBTASK;
     }
-
-//    @Override
-//    public String toString() {
-//        return String.format("%s,%d,%s,%s,%s",
-//                getType(), getId(), getTitle(), getDescription(), getStatus());
-//    }
 
 
 }
