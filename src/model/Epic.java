@@ -45,34 +45,4 @@ public class Epic extends Task {
         return TaskType.EPIC;
     }
 
-
-    //общая продолжительность всех подзадач
-    @Override
-    public Duration getDuration() {
-        Duration totalDuration = Duration.ZERO;
-        for (Integer subtaskId : subtaskids) {
-            totalDuration = totalDuration.plus(manager.getSubtaskById(subtaskId).getDuration());
-        }
-        return totalDuration;
-    }
-
-    //самое раннее время начала среди всех подзадач
-    @Override
-    public LocalDateTime getStartTime() {
-        LocalDateTime earliestStartTime = LocalDateTime.MAX;
-        for (Integer subtaskId : subtaskids) {
-            LocalDateTime subtaskStartTime = manager.getSubtaskById(subtaskId).getStartTime();
-            if (subtaskStartTime.isBefore(earliestStartTime)) {
-                earliestStartTime = subtaskStartTime;
-            }
-        }
-        return earliestStartTime;
-    }
-
-    //время окончания задачи
-    @Override
-    public LocalDateTime getEndTime() {
-        return getStartTime().plus(getDuration());
-    }
-
 }

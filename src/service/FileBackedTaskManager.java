@@ -57,11 +57,6 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     }
 
 
-//    public String toString(Task task) {
-//        return task.toString();
-//    }
-
-
     private Task fromString(String value) {
         String[] parts = value.split(",");
         if (parts.length < 7) {

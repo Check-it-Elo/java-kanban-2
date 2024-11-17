@@ -78,16 +78,4 @@ public class ExtendedInMemoryTaskManagerTest {
         assertNotNull(fetchedTask2.getStartTime());
     }
 
-//    //проверка добавления подзадач с duration и startTime
-//    @Test
-//    void testSubtaskWithDurationAndStartTime() {
-//        taskManager.addEpic(epic1);
-//        taskManager.addSubtask(subtask1);
-//
-//        Subtask fetchedSubtask = taskManager.getSubtask(subtask1.getId());
-//        assertEquals(Duration.ofMinutes(30), fetchedSubtask.getDuration());
-//        assertNotNull(fetchedSubtask.getStartTime());
-//        assertEquals(epic1.getId(), fetchedSubtask.getLinkEpic());
-//    }
-
 }
