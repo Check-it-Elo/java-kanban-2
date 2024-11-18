@@ -46,8 +46,11 @@ public class InMemoryTaskManager implements TaskManager {
         if (epicId != null) {
             subtask.setId(counter++);
             subtasks.put(subtask.getId(), subtask);
+
             prioritizedTasks.add(subtask);
             updateEpicStatus(epicId);
+            updateEpicDetails(epicId);
+
         } else {
             System.out.println("Подзадача не ссылается ни на один эпик");
         }
@@ -216,6 +219,7 @@ public class InMemoryTaskManager implements TaskManager {
                 if (epicSubtaskIds.remove((Integer) id)) {
                     prioritizedTasks.remove(subtask);
                     updateEpicStatus(epicId);
+                    updateEpicDetails(epicId);
                 }
             }
 
@@ -321,7 +325,7 @@ public class InMemoryTaskManager implements TaskManager {
 
 
     //общая продолжительность всех подзадач
-    public Duration getDuration(Epic epic) {
+    private Duration getDuration(Epic epic) {
         Duration totalDuration = Duration.ZERO;
         for (Integer subtaskId : epic.getSubtaskids()) {
             Subtask subtask = getSubtaskById(subtaskId);
@@ -333,7 +337,7 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     //самое раннее время начала среди всех подзадач
-    public LocalDateTime getStartTime(Epic epic) {
+    private LocalDateTime getStartTime(Epic epic) {
         LocalDateTime earliestStartTime = LocalDateTime.MAX;
         for (Integer subtaskId : epic.getSubtaskids()) {
             Subtask subtask = getSubtaskById(subtaskId);
@@ -348,10 +352,25 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     //время окончания задачи
-    public LocalDateTime getEndTime(Epic epic) {
+    private LocalDateTime getEndTime(Epic epic) {
         Duration totalDuration = getDuration(epic);
         LocalDateTime startTime = getStartTime(epic);
         return startTime.plus(totalDuration);
+    }
+
+
+    private void updateEpicDetails(int epicId) {
+        Epic epic = epics.get(epicId);
+        if (epic != null) {
+            Duration totalDuration = getDuration(epic);
+            LocalDateTime earliestStartTime = getStartTime(epic);
+            LocalDateTime endTime = getEndTime(epic);
+
+            epic.setDuration(totalDuration);
+            epic.setStartTime(earliestStartTime);
+            epic.setEndTime(endTime);
+
+        }
     }
 
 

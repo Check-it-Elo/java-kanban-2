@@ -13,8 +13,9 @@ public class Task implements Comparable<Task> {
     private Status status;
     private TaskType type;
 
-    private Duration duration; //полное время
-    private LocalDateTime startTime; //время начала
+    protected Duration duration; //полное время
+    protected LocalDateTime startTime; //время начала
+    protected LocalDateTime endTime; // время окончания
 
     public Task(String title, String description, Status status, Duration duration, LocalDateTime startTime) {
         this.title = title;
@@ -23,6 +24,7 @@ public class Task implements Comparable<Task> {
         this.status = status;
         this.duration = duration;
         this.startTime = startTime;
+        this.endTime = startTime.plus(duration);
     }
 
 
@@ -122,5 +124,6 @@ public class Task implements Comparable<Task> {
     public TaskType getType() {
         return TaskType.TASK;
     }
+
 
 }
