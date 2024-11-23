@@ -1,45 +1,47 @@
 package http;
 
 import com.sun.net.httpserver.HttpServer;
-import service.InMemoryTaskManager;
+import service.TaskManager;
+import service.Managers;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
 
+
 public class HttpTaskServer {
 
+
     private static final int PORT = 8080;
-    private final InMemoryTaskManager taskManager;
+    private HttpServer server;
+    private TaskManager taskManager;
 
-    public HttpTaskServer(InMemoryTaskManager taskManager) {
+    public HttpTaskServer(TaskManager taskManager) {
         this.taskManager = taskManager;
-    }
-
-    public void start() {
         try {
-            HttpServer server = HttpServer.create(new InetSocketAddress(PORT), 0);
-
-            // Регистрируем обработчики
+            server = HttpServer.create(new InetSocketAddress(PORT), 0);
             server.createContext("/tasks", new TaskHandler(taskManager));
             server.createContext("/subtasks", new SubtaskHandler(taskManager));
             server.createContext("/epics", new EpicHandler(taskManager));
             server.createContext("/history", new HistoryHandler(taskManager));
             server.createContext("/prioritized", new PrioritizedHandler(taskManager));
-
-            server.setExecutor(null);
-            server.start();
-
-            System.out.println("Server started on port " + PORT);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
+    public void start() {
+        server.start();
+    }
+
+    public void stop() {
+        server.stop(0);
+    }
+
     public static void main(String[] args) {
-        InMemoryTaskManager taskManager = new InMemoryTaskManager();
-
-        HttpTaskServer httpTaskServer = new HttpTaskServer(taskManager);
-
+        TaskManager manager = Managers.getDefault();
+        HttpTaskServer httpTaskServer = new HttpTaskServer(manager);
         httpTaskServer.start();
     }
+
+
 }

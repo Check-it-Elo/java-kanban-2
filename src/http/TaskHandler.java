@@ -2,99 +2,59 @@ package http;
 
 import com.google.gson.Gson;
 import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpHandler;
 import model.Task;
-import service.InMemoryTaskManager;
+import service.TaskManager;
 
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.util.List;
 
-public class TaskHandler extends BaseHttpHandler {
 
-    private final InMemoryTaskManager taskManager;
+public class TaskHandler extends BaseHttpHandler implements HttpHandler {
+    private final TaskManager taskManager;
     private final Gson gson = new Gson();
 
-    public TaskHandler(InMemoryTaskManager taskManager) {
+    public TaskHandler(TaskManager taskManager) {
         this.taskManager = taskManager;
     }
 
-
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-        try {
-            String method = exchange.getRequestMethod();
-            String response;
-
-            switch (method) {
-                case "GET":
-                    response = getAllTasks();
-                    sendText(exchange, response, 200);
-                    break;
-
-                case "POST":
-                    String taskJson = getRequestBody(exchange);
-                    Task task = gson.fromJson(taskJson, Task.class);
-                    taskManager.addTask(task);
-                    sendText(exchange, "Задача успешно создана", 201);
-                    break;
-
-                case "DELETE":
-                    String taskId = getQueryParameter(exchange, "id");
-                    if (taskId != null) {
-                        taskManager.deleteTaskById(Integer.parseInt(taskId));
-                        sendText(exchange, "Задача успешно удалена", 200);
-                    } else {
-                        sendNotFound(exchange);
-                    }
-                    break;
-
-                default:
-                    sendText(exchange, "Метод не поддерживается", 405);
-            }
-        } catch (NumberFormatException e) {
-            sendText(exchange, "Некорректный ID задачи", 400);
-        } catch (NotFoundException e) {
-            sendNotFound(exchange);
-        } catch (Exception e) {
-            sendText(exchange, "Ошибка сервера", 500);
+        switch (exchange.getRequestMethod()) {
+            case "GET":
+                handleGet(exchange);
+                break;
+            case "POST":
+                handlePost(exchange);
+                break;
+            case "DELETE":
+                handleDelete(exchange);
+                break;
+            default:
+                sendError(exchange);
+                break;
         }
     }
 
 
-    // Преобразуем список задач в JSON
-    private String getAllTasks() {
+    private void handleGet(HttpExchange exchange) throws IOException {
         List<Task> tasks = taskManager.getAllTasks();
-        return gson.toJson(tasks);
+        String jsonResponse = gson.toJson(tasks);
+        sendText(exchange, jsonResponse);
     }
 
-
-    //Получаем тело задачи в JSON
-    private String getRequestBody(HttpExchange exchange) throws IOException {
+    private void handlePost(HttpExchange exchange) throws IOException {
         BufferedReader reader = new BufferedReader(new InputStreamReader(exchange.getRequestBody()));
-        StringBuilder requestBody = new StringBuilder();
-        String line;
-        while ((line = reader.readLine()) != null) {
-            requestBody.append(line);
-        }
-        return requestBody.toString();
+        Task task = gson.fromJson(reader, Task.class);
+        taskManager.addTask(task);
+        sendText(exchange, gson.toJson(task));
     }
 
-
-    //Извлечение параметра
-    private String getQueryParameter(HttpExchange exchange, String param) {
-        String query = exchange.getRequestURI().getQuery();
-        if (query != null) {
-            String[] pairs = query.split("&");
-            for (String pair : pairs) {
-                String[] keyValue = pair.split("=");
-                if (keyValue[0].equals(param)) {
-                    return keyValue.length > 1 ? keyValue[1] : null;
-                }
-            }
-        }
-        return null;
+    private void handleDelete(HttpExchange exchange) throws IOException {
+        String id = exchange.getRequestURI().getPath().split("/")[2];
+        int taskId = Integer.parseInt(id);
+        taskManager.deleteTaskById(taskId);
+        sendText(exchange, "Задача удалена");
     }
 
 

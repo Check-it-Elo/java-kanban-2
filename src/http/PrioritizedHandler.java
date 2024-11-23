@@ -2,31 +2,34 @@ package http;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.google.gson.Gson;
+import com.sun.net.httpserver.HttpHandler;
 import model.Task;
-import service.InMemoryTaskManager;
+import service.TaskManager;
 
 import java.io.IOException;
-import java.util.TreeSet;
+import java.util.List;
 
-public class PrioritizedHandler extends BaseHttpHandler {
 
-    private final InMemoryTaskManager taskManager;
-    private final Gson gson;
+public class PrioritizedHandler extends BaseHttpHandler implements HttpHandler {
+    private final TaskManager taskManager;
+    private final Gson gson = new Gson();
 
-    public PrioritizedHandler(InMemoryTaskManager taskManager) {
+    public PrioritizedHandler(TaskManager taskManager) {
         this.taskManager = taskManager;
-        this.gson = new Gson();
     }
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
         if ("GET".equals(exchange.getRequestMethod())) {
-            TreeSet<Task> prioritizedTasks = taskManager.getPrioritizedTasks();
-
-            String jsonResponse = gson.toJson(prioritizedTasks);
-            sendText(exchange, jsonResponse, 200);
+            handleGet(exchange);
         } else {
-            sendNotFound(exchange);
+            sendError(exchange);
         }
+    }
+
+    private void handleGet(HttpExchange exchange) throws IOException {
+        List<Task> prioritizedTasks = taskManager.getAllTasks();
+        String jsonResponse = gson.toJson(prioritizedTasks);
+        sendText(exchange, jsonResponse);
     }
 }
