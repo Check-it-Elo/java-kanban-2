@@ -1,4 +1,4 @@
-package httpTests;
+package http_tests;
 
 import http.DurationAdapter;
 import http.LocalDateTimeAdapter;
