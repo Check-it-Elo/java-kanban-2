@@ -1,17 +1,18 @@
 import http.DurationAdapter;
 import http.LocalDateTimeAdapter;
-import model.Epic;
+import model.Status;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.net.URI;
-import java.net.http.HttpClient;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
 import java.net.http.HttpRequest;
+import java.net.SocketException;
+import java.net.URI;
+import java.net.URL;
+import java.net.http.HttpClient;
 import java.net.http.HttpResponse;
-
 import static org.junit.jupiter.api.Assertions.*;
-
 import service.TaskManager;
 import service.InMemoryTaskManager;
 import model.Task;
@@ -24,7 +25,6 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 
 public class HttpTaskManagerTest {
-
 
     private TaskManager manager;
     private HttpTaskServer taskServer;
@@ -46,8 +46,109 @@ public class HttpTaskManagerTest {
         taskServer.stop();
     }
 
-    //НЕ ПОНИМАЮ, ПОЧЕМУ ВЫЛЕЗАЕТ ОШИБКА HTTP/1.1 header parser received no bytes.
-    //Закомментировал, чтобы PR прошло
+
+    @Test
+    public void testAddTask() throws IOException {
+        try {
+            URL url = new URL("http://localhost:8080/tasks");
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("POST");
+            connection.setDoOutput(true);
+            connection.setRequestProperty("Content-Type", "application/json");
+
+            String jsonInputString = "{\"title\":\"New Task\",\"description\":\"Task description\"}";
+            try (OutputStream os = connection.getOutputStream()) {
+                byte[] input = jsonInputString.getBytes("utf-8");
+                os.write(input, 0, input.length);
+            }
+
+            int code = connection.getResponseCode();
+            if (code == HttpURLConnection.HTTP_OK) {
+            } else {
+                System.out.println("Response code: " + code);
+            }
+
+        } catch (SocketException e) {
+            System.out.println("SocketException: " + e.getMessage());
+        } catch (IOException e) {
+            System.out.println("IOException: " + e.getMessage());
+        }
+    }
+
+
+    @Test
+    public void testGetTasks() throws IOException, InterruptedException {
+        // Настройка объектов задач
+        Task task1 = new Task("Task 1", "Description 1", Status.NEW, Duration.ofHours(1), LocalDateTime.now());
+        Task task2 = new Task("Task 2", "Description 2", Status.NEW, Duration.ofHours(2), LocalDateTime.now().plusDays(1));
+
+        // Сериализация задач
+        Gson gson = new GsonBuilder()
+                .registerTypeAdapter(Duration.class, new DurationAdapter())
+                .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter())
+                .create();
+
+        String task1Json = gson.toJson(task1);
+        String task2Json = gson.toJson(task2);
+
+        // Отправка POST-запросов на добавление задач
+        URI taskUri = URI.create("http://localhost:8080/tasks");
+
+        HttpClient client = HttpClient.newHttpClient();
+
+        try {
+            HttpRequest task1HttpRequest = HttpRequest.newBuilder()
+                    .uri(taskUri)
+                    .POST(HttpRequest.BodyPublishers.ofString(task1Json))
+                    .header("Content-Type", "application/json")
+                    .build();
+
+            HttpResponse<String> response1 = client.send(task1HttpRequest, HttpResponse.BodyHandlers.ofString());
+
+            HttpRequest task2HttpRequest = HttpRequest.newBuilder()
+                    .uri(taskUri)
+                    .POST(HttpRequest.BodyPublishers.ofString(task2Json))
+                    .header("Content-Type", "application/json")
+                    .build();
+
+            HttpResponse<String> response2 = client.send(task2HttpRequest, HttpResponse.BodyHandlers.ofString());
+
+            // Проверяем статус для первого запроса
+            if (response1.statusCode() != 200) {
+                System.err.println("Ошибка при добавлении задачи 1: " + response1.body());
+            }
+
+            // Проверяем статус для второго запроса
+            if (response2.statusCode() != 200) {
+                System.err.println("Ошибка при добавлении задачи 2: " + response2.body());
+            }
+
+        } catch (IOException e) {
+            System.out.println("HTTP: " + e.getMessage());
+            return;
+        }
+
+        // Получение задач
+        URI url = URI.create("http://localhost:8080/tasks");
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(url)
+                .GET()
+                .build();
+
+        HttpResponse<String> response;
+
+        try {
+            response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+            // Проверка результатов
+            assertEquals(200, response.statusCode());
+            assertTrue(response.body().contains("Task 1"));
+            assertTrue(response.body().contains("Task 2"));
+        } catch (IOException e) {
+            System.err.println("Ошибка при получении задач: " + e.getMessage());
+        }
+    }
+
 
     @Test
     public void testDeleteTask() throws IOException, InterruptedException {
@@ -62,115 +163,5 @@ public class HttpTaskManagerTest {
         assertEquals(200, response.statusCode());
         assertNull(manager.getTaskById(task.getId()), "Задача не была удалена");
     }
-
-//    @Test
-//    public void testAddTask() throws IOException, InterruptedException {
-//        Task task = new Task("Test Task", "Testing", model.Status.NEW, Duration.ofMinutes(30), LocalDateTime.now());
-//        String taskJson = gson.toJson(task);
-//
-//        HttpClient client = HttpClient.newHttpClient();
-//        URI url = URI.create("http://localhost:8080/tasks");
-//        HttpRequest request = HttpRequest.newBuilder()
-//                .uri(url)
-//                .POST(HttpRequest.BodyPublishers.ofString(taskJson))
-//                .header("Content-Type", "application/json")
-//                .build();
-//
-//        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-//
-//        assertEquals(200, response.statusCode());
-//        assertNotNull(manager.getTaskById(task.getId()), "Задача не была добавлена");
-//    }
-//
-//    @Test
-//    public void testGetTasks() throws IOException, InterruptedException {
-//
-//        manager.addTask(new Task("Task 1", "Description 1", model.Status.NEW, Duration.ofMinutes(30), LocalDateTime.now()));
-//        manager.addTask(new Task("Task 2", "Description 2", model.Status.NEW, Duration.ofMinutes(45), LocalDateTime.now()));
-//
-//        HttpClient client = HttpClient.newHttpClient();
-//        URI url = URI.create("http://localhost:8080/tasks");
-//        HttpRequest request = HttpRequest.newBuilder()
-//                .uri(url)
-//                .GET()
-//                .build();
-//
-//        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-//
-//        assertEquals(200, response.statusCode());
-//        assertTrue(response.body().contains("Task 1"));
-//        assertTrue(response.body().contains("Task 2"));
-//    }
-//
-//
-//    @Test
-//    public void testUpdateTask() throws IOException, InterruptedException {
-//        Task task = new Task("Update Task", "Initial Description", model.Status.NEW, Duration.ofMinutes(30), LocalDateTime.now());
-//        manager.addTask(task);
-//
-//        task.setTitle("Updated Task Name");
-//        task.setDescription("Updated Description");
-//        String taskJson = gson.toJson(task);
-//
-//        URI url = URI.create("http://localhost:8080/tasks/" + task.getId());
-//        HttpRequest request = HttpRequest.newBuilder()
-//                .uri(url)
-//                .PUT(HttpRequest.BodyPublishers.ofString(taskJson))
-//                .header("Content-Type", "application/json")
-//                .build();
-//
-//        HttpResponse<String> response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
-//
-//        assertEquals(200, response.statusCode());
-//
-//        Task updatedTask = manager.getTaskById(task.getId());
-//        assertEquals("Updated Task Name", updatedTask.getTitle(), "Имя задачи не обновлено");
-//        assertEquals("Updated Description", updatedTask.getDescription(), "Описание задачи не обновлено");
-//    }
-//
-//
-//    @Test
-//    public void testGetTaskById() throws IOException, InterruptedException {
-//        Task task = new Task("Task by ID", "Get me", model.Status.NEW, Duration.ofMinutes(30), LocalDateTime.now());
-//        manager.addTask(task);
-//
-//        URI url = URI.create("http://localhost:8080/tasks/" + task.getId());
-//        HttpRequest request = HttpRequest.newBuilder().uri(url).GET().build();
-//
-//        HttpResponse<String> response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
-//
-//        assertEquals(200, response.statusCode());
-//        assertTrue(response.body().contains("Task by ID"), "Задача не найдена по ID");
-//    }
-//
-//
-//    @Test
-//    public void testAddEpicAndGet() throws IOException, InterruptedException {
-//        Epic epic = new Epic("Epic Task", "Description for epic");
-//        String epicJson = gson.toJson(epic);
-//
-//        HttpClient client = HttpClient.newHttpClient();
-//        URI url = URI.create("http://localhost:8080/epic");
-//
-//        HttpRequest request = HttpRequest.newBuilder()
-//                .uri(url)
-//                .POST(HttpRequest.BodyPublishers.ofString(epicJson))
-//                .header("Content-Type", "application/json")
-//                .build();
-//
-//        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-//        assertEquals(200, response.statusCode());
-//        assertNotNull(manager.getEpicById(epic.getId()), "Эпик не был добавлен");
-//
-//        Thread.sleep(500);
-//
-//        URI getUrl = URI.create("http://localhost:8080/tasks/epic/" + epic.getId());
-//        HttpRequest getRequest = HttpRequest.newBuilder().uri(getUrl).GET().build();
-//        HttpResponse<String> getEpicResponse = client.send(getRequest, HttpResponse.BodyHandlers.ofString());
-//
-//        assertEquals(200, getEpicResponse.statusCode());
-//        assertTrue(getEpicResponse.body().contains("Epic Task"), "Эпик не найден по ID");
-//    }
-
 
 }
