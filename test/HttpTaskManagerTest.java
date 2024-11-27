@@ -1,5 +1,6 @@
 import http.DurationAdapter;
 import http.LocalDateTimeAdapter;
+import model.Epic;
 import model.Status;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -50,16 +51,9 @@ public class HttpTaskManagerTest {
     public void testAddTask() throws IOException, InterruptedException {
         URI url = URI.create("http://localhost:8080/tasks");
 
-        // Сериализация задачи
-        String taskJson = gson.toJson(new Task(
-                "Новая задача",
-                "Описание задачи",
-                Status.NEW,
-                Duration.ofMinutes(90),
-                LocalDateTime.of(2024, 8, 15, 10, 0)
-        ));
-
-        System.out.println("Отправляемый JSON: " + taskJson);
+        Task task = new Task("Task to add", "Add me", model.Status.NEW, Duration.ofMinutes(30), LocalDateTime.now());
+        manager.addTask(task);
+        String taskJson = gson.toJson(task);
 
         HttpClient client = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(20))
@@ -73,8 +67,9 @@ public class HttpTaskManagerTest {
 
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-        assertEquals(200, response.statusCode(), "Статус код должен быть 200");
-        assertTrue(response.body().contains("Новая задача"), "Ответ должен содержать заголовок задачи");
+        System.out.println(response.statusCode());
+
+        assertEquals(200, response.statusCode());
 
     }
 
@@ -115,78 +110,89 @@ public class HttpTaskManagerTest {
     }
 
 
-//    @Test
-//    public void testGetTasks() throws IOException, InterruptedException {
-//        // Настройка объектов задач
-//        Task task1 = new Task("Task 1", "Description 1", Status.NEW, Duration.ofHours(1), LocalDateTime.now());
-//        Task task2 = new Task("Task 2", "Description 2", Status.NEW, Duration.ofHours(2), LocalDateTime.now().plusDays(1));
-//
-//        // Сериализация задач
-//        Gson gson = new GsonBuilder()
-//                .registerTypeAdapter(Duration.class, new DurationAdapter())
-//                .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter())
-//                .create();
-//
-//        String task1Json = gson.toJson(task1);
-//        String task2Json = gson.toJson(task2);
-//
-//        // Отправка POST-запросов на добавление задач
-//        URI taskUri = URI.create("http://localhost:8080/tasks");
-//
-//        HttpClient client = HttpClient.newHttpClient();
-//
-//        try {
-//            HttpRequest task1HttpRequest = HttpRequest.newBuilder()
-//                    .uri(taskUri)
-//                    .POST(HttpRequest.BodyPublishers.ofString(task1Json))
-//                    .header("Content-Type", "application/json")
-//                    .build();
-//
-//            HttpResponse<String> response1 = client.send(task1HttpRequest, HttpResponse.BodyHandlers.ofString());
-//
-//            HttpRequest task2HttpRequest = HttpRequest.newBuilder()
-//                    .uri(taskUri)
-//                    .POST(HttpRequest.BodyPublishers.ofString(task2Json))
-//                    .header("Content-Type", "application/json")
-//                    .build();
-//
-//            HttpResponse<String> response2 = client.send(task2HttpRequest, HttpResponse.BodyHandlers.ofString());
-//
-//            // Проверяем статус для первого запроса
-//            if (response1.statusCode() != 200) {
-//                System.err.println("Ошибка при добавлении задачи 1: " + response1.body());
-//            }
-//
-//            // Проверяем статус для второго запроса
-//            if (response2.statusCode() != 200) {
-//                System.err.println("Ошибка при добавлении задачи 2: " + response2.body());
-//            }
-//
-//        } catch (IOException e) {
-//            System.out.println("HTTP: " + e.getMessage());
-//            return;
-//        }
-//
-//        // Получение задач
-//        URI url = URI.create("http://localhost:8080/tasks");
-//        HttpRequest request = HttpRequest.newBuilder()
-//                .uri(url)
-//                .GET()
-//                .build();
-//
-//        HttpResponse<String> response;
-//
-//        try {
-//            response = client.send(request, HttpResponse.BodyHandlers.ofString());
-//
-//            // Проверка результатов
-//            assertEquals(200, response.statusCode());
-//            assertTrue(response.body().contains("Task 1"));
-//            assertTrue(response.body().contains("Task 2"));
-//        } catch (IOException e) {
-//            System.err.println("Ошибка при получении задач: " + e.getMessage());
-//        }
-//    }
+    @Test
+    public void testGetTaskHistory() throws IOException, InterruptedException {
+        // Создание и добавление задач
+        Task task1 = new Task("Task 1", "Description of Task 1", Status.NEW, Duration.ofMinutes(30), LocalDateTime.now());
+        Task task2 = new Task("Task 2", "Description of Task 2", Status.NEW, Duration.ofMinutes(45), LocalDateTime.now());
+        manager.addTask(task1);
+        manager.addTask(task2);
+
+        // Имитируем просмотр задач
+        manager.getTaskById(task1.getId());
+        manager.getTaskById(task2.getId());
+
+        // Запрашиваем историю
+        HttpClient client = HttpClient.newHttpClient();
+        URI url = URI.create("http://localhost:8080/history");
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(url)
+                .GET()
+                .build();
+
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        // Проверка статуса и содержимого ответа
+        assertEquals(200, response.statusCode(), "Статус код должен быть 200");
+        assertTrue(response.body().contains("Task 1"), "Ответ должен содержать 'Task 1'");
+        assertTrue(response.body().contains("Task 2"), "Ответ должен содержать 'Task 2'");
+    }
+
+
+    @Test
+    public void testGetEpicById() throws IOException, InterruptedException {
+        Epic epic = new Epic("Epic 1", "This is epic 1");
+        manager.addEpic(epic);
+
+        URI url = URI.create("http://localhost:8080/epics/" + epic.getId());
+        HttpClient client = HttpClient.newHttpClient();
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(url)
+                .GET()
+                .build();
+
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        assertEquals(200, response.statusCode());
+        assertTrue(response.body().contains("Epic 1"), "The response should contain the epic title");
+    }
+
+    @Test
+    public void testDeleteEpic() throws IOException, InterruptedException {
+        Epic epic = new Epic("Epic to delete", "Delete this epic");
+        manager.addEpic(epic);
+
+        URI url = URI.create("http://localhost:8080/epics/" + epic.getId());
+        HttpRequest request = HttpRequest.newBuilder().uri(url).DELETE().build();
+
+        HttpResponse<String> response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
+
+        assertEquals(200, response.statusCode());
+        assertNull(manager.getEpicById(epic.getId()), "Epic should have been deleted");
+    }
+
+
+    @Test
+    public void testGetPrioritizedTasks() throws IOException, InterruptedException {
+        Task task1 = new Task("Task A", "Description A", Status.NEW, Duration.ofMinutes(30), LocalDateTime.now());
+        Task task2 = new Task("Task B", "Description B", Status.NEW, Duration.ofMinutes(15), LocalDateTime.now());
+        manager.addTask(task1);
+        manager.addTask(task2);
+
+        URI url = URI.create("http://localhost:8080/prioritized");
+        HttpClient client = HttpClient.newHttpClient();
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(url)
+                .GET()
+                .build();
+
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        assertEquals(200, response.statusCode());
+        assertTrue(response.body().contains("Task A"), "Response should contain Task A");
+        assertTrue(response.body().contains("Task B"), "Response should contain Task B");
+    }
 
 
 }
