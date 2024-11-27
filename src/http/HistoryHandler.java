@@ -16,8 +16,8 @@ public class HistoryHandler extends BaseHttpHandler implements HttpHandler {
     private final TaskManager taskManager;
 
     Gson gson = new GsonBuilder()
-            .registerTypeAdapter(LocalDateTime .class, new LocalDateTimeAdapter())
-            .registerTypeAdapter(Duration .class, new DurationAdapter())
+            .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter())
+            .registerTypeAdapter(Duration.class, new DurationAdapter())
             .create();
 
     public HistoryHandler(TaskManager taskManager) {
